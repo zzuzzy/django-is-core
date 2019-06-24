@@ -97,25 +97,25 @@ class RESTObjectPermissionsMixin(RESTPermissionsMixin):
 
     def has_create_obj_permission(self, obj=None, **kwargs):
         return (
-            self.permission.has_permission('create_obj', self.request, self, obj=kwargs.get('obj')) and
+            self.permission.has_permission('create_obj', self.request, self, obj=obj) and
             super().has_create_obj_permission(obj=obj, **kwargs)
         )
 
     def has_read_obj_permission(self, obj=None, **kwargs):
         return (
-            self.permission.has_permission('read_obj', self.request, self, obj=kwargs.get('obj')) and
+            self.permission.has_permission('read_obj', self.request, self, obj=obj) and
             super().has_read_obj_permission(obj=obj, **kwargs)
         )
 
     def has_update_obj_permission(self, obj=None, **kwargs):
         return (
-            self.permission.has_permission('update_obj', self.request, self, obj=kwargs.get('obj')) and
+            self.permission.has_permission('update_obj', self.request, self, obj=obj) and
             super().has_update_obj_permission(obj=obj, **kwargs)
         )
 
     def has_delete_obj_permission(self, obj=None, **kwargs):
         return (
-            self.permission.has_permission('delete_obj', self.request, self, obj=kwargs.get('obj')) and
+            self.permission.has_permission('delete_obj', self.request, self, obj=obj) and
             super().has_delete_obj_permission(obj=obj, **kwargs)
         )
 
@@ -153,6 +153,15 @@ class RESTResourceMixin:
         if response_exception:
             raise response_exception
         return super()._get_error_response(exception)
+
+    def get_method_returning_field_value(self, field_name):
+        """
+        Field values can be obtained from resource or core.
+        """
+        return (
+            super().get_method_returning_field_value(field_name)
+            or self.core.get_method_returning_field_value(field_name)
+        )
 
 
 class RESTModelCoreResourcePermissionsMixin(RESTObjectPermissionsMixin):

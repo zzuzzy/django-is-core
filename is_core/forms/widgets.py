@@ -165,7 +165,12 @@ class ReadonlyWidget(SmartWidgetMixin, Widget):
 
     def _get_value(self, value):
         widget = self._get_widget()
-        return dict(self.widget.choices).get(value, value) if widget and hasattr(widget, 'choices') else value
+        if widget and hasattr(widget, 'choices'):
+            choices_dict = dict(widget.choices)
+            text_choices_dict = {str(k): v for k, v in widget.choices}
+            return choices_dict.get(value, text_choices_dict.get(value, value))
+        else:
+            return value
 
     def _get_value_display(self, value):
         from is_core.utils import display_for_value
@@ -450,7 +455,7 @@ class RestrictedSelectMultipleWidget(RestrictedSelectWidgetMixin, forms.SelectMu
     def value_from_datadict(self, data, files, name):
         if self.is_restricted:
             value = data.get(name)
-            return [v.strip() for v in value.split(self.separator)] if isinstance(value, str) else value
+            return [v.strip() for v in value.split(self.separator) if v.strip()] if isinstance(value, str) else value
         else:
             return super(RestrictedSelectMultipleWidget, self).value_from_datadict(data, files, name)
 

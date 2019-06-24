@@ -19,7 +19,7 @@ from is_core.generic_views.form_views import AddModelFormView, DetailModelFormVi
 from is_core.generic_views.table_views import TableView
 from is_core.rest.resource import RESTModelResource, UIRESTModelResource
 from is_core.patterns import UIPattern, RESTPattern, DoubleRESTPattern, HiddenRESTPattern
-from is_core.utils import flatten_fieldsets, str_to_class
+from is_core.utils import flatten_fieldsets, str_to_class, GetMethodFieldMixin
 from is_core.utils.compatibility import urls_wrapper, get_model_name, reverse
 from is_core.menu import LinkMenuItem
 from is_core.loading import register_core
@@ -118,7 +118,7 @@ class ISCore(metaclass=ISCoreBase):
         return '-'.join(self.get_menu_groups())
 
 
-class ModelISCore(ISCore):
+class ModelISCore(GetMethodFieldMixin, ISCore):
     """
     Parent of REST and UI cores that works as controller to specific model.
     This class is abstract.
@@ -542,6 +542,7 @@ class RESTModelISCore(RESTISCore, ModelISCore):
 
     rest_resource_class = RESTModelResource
     rest_form_field_labels = None
+    rest_paginator = None
 
     def get_rest_allowed_methods(self):
         rest_allowed_methods = ['options']
@@ -634,7 +635,10 @@ class RESTModelISCore(RESTISCore, ModelISCore):
         )
 
     def get_rest_class(self):
-        return modelrest_factory(self.model, self.rest_resource_class)
+        resource_kwargs = {}
+        if self.rest_paginator:
+            resource_kwargs['paginator'] = self.rest_paginator
+        return modelrest_factory(self.model, self.rest_resource_class, resource_kwargs=resource_kwargs)
 
     def get_rest_patterns(self):
         rest_patterns = super(RESTModelISCore, self).get_rest_patterns()
